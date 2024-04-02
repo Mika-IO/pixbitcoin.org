@@ -1,3 +1,4 @@
+<!-- SYML - "Where's My Love" -->
 <!DOCTYPE html>
 <html lang="pt-br" data-theme="light">
 
@@ -84,6 +85,30 @@
             valorEmBitcoin = valorEmBitcoin.toFixed(8)
             document.getElementById('estimativaBitcoin').innerText = `Você vai receber aproximadamente ${valorEmBitcoin} Bitcoins`;
         }
+
+        function applySavedTheme() {
+            // Verifica se existe algum tema salvo no localStorage
+            const savedTheme = localStorage.getItem("theme");
+
+            // Se existir, aplica o tema salvado
+            if (savedTheme) {
+                document.documentElement.dataset.theme = savedTheme;
+
+                // Aplica as classes CSS de acordo com o tema salvado
+                if (savedTheme === "light") {
+                    document.body.classList.remove("dark-theme");
+                    // Atualiza o emoji do botão para sol
+                    document.querySelector('.outline').innerHTML = "☀️ PixBTC";
+                } else {
+                    document.body.classList.add("dark-theme");
+                    // Atualiza o emoji do botão para lua
+                    document.querySelector('.outline').innerHTML = "🌙 PixBTC";
+                }
+            }
+        }
+
+        // Chama a função applySavedTheme quando a página carregar
+        document.addEventListener("DOMContentLoaded", applySavedTheme);
 
         function toggleTheme() {
             const currentTheme = document.documentElement.dataset.theme;
