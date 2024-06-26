@@ -142,7 +142,7 @@
                     .then(pix_text => {
                         document.getElementById('qrcode').innerHTML = `<img id="qrcodeImg" onclick="copyQrCode()" src="${pix_text}"> `;
 
-                        document.getElementById('qrcode-message').innerHTML = '<p class="chapter">Te enviaremos os dados por e-mail!</p>';
+                        document.getElementById('qrcode-message').innerHTML = '<p class="chapter">Te enviaremos os dados por e-mail <br>Após o pagamento!</p>';
                         console.log(pix_text);
                     });
             });
