@@ -65,26 +65,38 @@
         }
     </style>
     <script>
+        let cotacaoBitcoin = null;
+
         async function obterCotacaoBitcoin() {
             try {
+                console.log("cotação do bitcoin")
                 const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl';
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Falha ao obter cotação do Bitcoin');
                 const data = await response.json();
-                return data.bitcoin.brl;
+                cotacaoBitcoin = data.bitcoin.brl;
             } catch (error) {
                 console.error('Erro ao obter cotação do Bitcoin:', error);
-                return null;
+                cotacaoBitcoin = null;
             }
         }
 
         async function atualizarEstimativaBitcoin() {
-            const cotacaoBitcoin = await obterCotacaoBitcoin();
+            if (cotacaoBitcoin === null) {
+                document.getElementById('estimativaBitcoin').innerText = 'Erro ao obter cotação do Bitcoin';
+                return;
+            }
             const valorEmReal = document.getElementById('valorReal').value;
             let valorEmBitcoin = valorEmReal / cotacaoBitcoin;
-            valorEmBitcoin = valorEmBitcoin.toFixed(8)
+            valorEmBitcoin = valorEmBitcoin.toFixed(8);
             document.getElementById('estimativaBitcoin').innerText = `Você vai receber aproximadamente ${valorEmBitcoin} Bitcoins`;
         }
+
+        // Obter a cotação do Bitcoin ao carregar a página
+        window.onload = async () => {
+            await obterCotacaoBitcoin();
+        };
+
 
         function applySavedTheme() {
             // Verifica se existe algum tema salvo no localStorage
@@ -153,20 +165,57 @@
             navigator.clipboard.writeText(qrcodeTxt)
             document.getElementById('qrcode-message').innerHTML = '<p class="chapter">Copiado na area de transferência ✔️</p>';
         }
+        function openDialog(dialogId) {
+            document.getElementById(dialogId).showModal();
+        }
+
+        function closeDialog(dialogId) {
+            document.getElementById(dialogId).close();
+        }
     </script>
 </head>
 
 <body>
+
+    <dialog id="withdrawDialog">
+        <main style=" height: 100vh; margin-top: 15px;" class="container">
+            <form action="">
+                <h1>Saque</h1>
+                <input required type="email" placeholder="Digite seu e-mail">
+                <input required type="number" placeholder="0" min="0.0001" step="0.0001">
+                <input required type="text" placeholder="Endereço BTC Lightning">
+                <button>Sacar</button>
+                <button type="button" onclick="closeDialog('withdrawDialog')">Fechar</button>
+                <br>
+                <p>OBS: Caso tenha saldo você receberá a confirmação por email!</p>
+            </form>
+        </main>
+    </dialog>
+
+
+    <dialog id="statementDialog">
+        <main style=" height: 100vh; margin-top: 15px;" class="container">
+            <form action="">
+                <h1>Solicitar Extrato</h1>
+                <input required type="email" placeholder="Digite seu e-mail">
+                <button>Solicitar</button>
+                <button type="button" onclick="closeDialog('statementDialog')">Fechar</button>
+                <br>
+                <p>OBS: Caso tenha saldo você receberá um extrato da sua conta por email!</p>
+            </form>
+        </main>
+    </dialog>
+
     <main style="height: 100vh;" class="container">
         <button class="outline" onclick="toggleTheme()">☀️ PIXBITCOIN</button>
-        <br><br>
 
+        <br>
+        <br>
         <form id="formCompra">
             <div>
                 <label for="valorReal">Valor em Reais (BRL):</label>
                 <input type="number" id="valorReal" name="valorReal" placeholder="Digite o valor em R$" min="10"
                     step="0.01" required>
-
             </div>
             <div>
                 <label for="email">E-mail:</label>
@@ -181,38 +230,56 @@
 
         </form>
     </main>
-    <br><br><br><br>
+
+    <br><br>
     <main class="container">
-        <h1>PixBitcoin.org</h1>
+        <button class="outline secondary" onclick="openDialog('withdrawDialog')">Saque</button>
+        <button class="outline secondary" onclick="openDialog('statementDialog')">Extrato</button>
+        <br>
+        <br>
+        <h1>PIXBITCOIN</h1>
         <p>PixBitcoin.org é uma plataforma projetada para facilitar a compra de Bitcoin através do sistema
-            de pagamento instantâneo PIX, super popular no Brasil. O processo é simplificado para garantir que até mesmo
+            de pagamento instantâneo PIX, super popular no Brasil. O processo é simplificado para garantir que até
+            mesmo
             os novos usuários de criptomoedas possam facilmente adquirir Bitcoin sem complicações de forma simples e
             rápida.</p>
 
         <h2>Interface</h2>
-        <p>Quando você acessa PixBitcoin.org, é recebido por uma interface amigável que destaca dois campos principais que
-            precisam ser preenchidos: um para o valor em Reais (BRL) que você deseja comprar e outro para o seu e-mail.
+        <p>Quando você acessa PixBitcoin.org, é recebido por uma interface amigável que destaca dois campos
+            principais
+            que
+            precisam ser preenchidos: um para o valor em Reais (BRL) que você deseja comprar e outro para o seu
+            e-mail.
             Além desses campos, você encontrará um QR Code de PIX, que é usado para realizar o pagamento do valor
             desejado.</p>
 
         <h2>Como Funciona</h2>
         <ul>
-            <li><strong>Valor em Reais (BRL):</strong> Você insere o montante em reais que deseja converter em Bitcoin.
-                Este valor será usado para calcular, com base na cotação atual do Bitcoin, a quantidade aproximada de
+            <li><strong>Valor em Reais (BRL):</strong> Você insere o montante em reais que deseja converter em
+                Bitcoin.
+                Este valor será usado para calcular, com base na cotação atual do Bitcoin, a quantidade aproximada
+                de
                 Bitcoin que você receberá.</li>
             <li><strong>E-mail:</strong> O e-mail é necessário para que a equipe do PixBTC.org possa identificar sua
                 compra e entrar em contato
                 com você via email para informar os detalhes da sua compra.</li>
-            <li><strong>Carteira Lightning:</strong>. Após a primeira compra, uma carteira da rede Lightning será criada
+            <li><strong>Carteira Lightning:</strong>. Após a primeira compra, uma carteira da rede Lightning será
+                criada
                 e as informações de acesso
-                serão enviadas para o seu e-mail. Para compras subsequentes, o valor em Bitcoin adquirido será enviado
-                diretamente para a mesma carteira, facilitando o processo e garantindo que você tenha acesso rápido e
+                serão enviadas para o seu e-mail. Para compras subsequentes, o valor em Bitcoin adquirido será
+                enviado
+                diretamente para a mesma carteira, facilitando o processo e garantindo que você tenha acesso rápido
+                e
                 seguro aos seus fundos.</li>
-            <li><strong>Pagamento via PIX:</strong> Utilizando o QR Code fornecido, você realiza o pagamento do valor
-                especificado. Este método é rápido, seguro e as transações são concluídas quase instantaneamente.</li>
+            <li><strong>Pagamento via PIX:</strong> Utilizando o QR Code fornecido, você realiza o pagamento do
+                valor
+                especificado. Este método é rápido, seguro e as transações são concluídas quase instantaneamente.
+            </li>
             <li><strong>Legenda Informativa:</strong> Uma legenda "Você vai receber aproximadamente n Bitcoins" é
-                exibida, fornecendo uma estimativa da quantidade de Bitcoin que você receberá, baseada na cotação atual.
-                Essa transparência ajuda a garantir que você esteja ciente do que esperar da transação. Caso a transação
+                exibida, fornecendo uma estimativa da quantidade de Bitcoin que você receberá, baseada na cotação
+                atual.
+                Essa transparência ajuda a garantir que você esteja ciente do que esperar da transação. Caso a
+                transação
                 por alguma razão não seja concluída, o valor pago será automaticamente devolvido.</li>
         </ul>
 
@@ -222,15 +289,20 @@
                 acessível a todos, independentemente da experiência anterior com criptomoedas.</li>
             <li><strong>Rapidez:</strong> O uso do PIX para pagamento torna o processo de compra de Bitcoin rápido e
                 eficiente.</li>
-            <li><strong>Segurança:</strong> Ao criar uma carteira da rede Lightning para novos usuários, a PixBitcoin.org
+            <li><strong>Segurança:</strong> Ao criar uma carteira da rede Lightning para novos usuários, a
+                PixBitcoin.org
                 garante um nível de segurança e privacidade, protegendo seus fundos.</li>
         </ul>
 
         <h2>Missão</h2>
-        <p>PixBitcoin.org representa uma ponte entre o sistema financeiro tradicional e o mundo das criptomoedas, oferecendo
-            uma solução prática para a compra de Bitcoin através do PIX. Seja você um bitcoiner experiente ou um novato
-            curioso sobre criptomoedas, o PixBitcoin.org simplifica o processo de entrar no mercado de Bitcoin, combinando
-            segurança, rapidez e facilidade de uso. Nossa missão é tornar a compra de Bitcoin acessível e conveniente
+        <p>PixBitcoin.org representa uma ponte entre o sistema financeiro tradicional e o mundo das criptomoedas,
+            oferecendo
+            uma solução prática para a compra de Bitcoin através do PIX. Seja você um bitcoiner experiente ou um
+            novato
+            curioso sobre criptomoedas, o PixBitcoin.org simplifica o processo de entrar no mercado de Bitcoin,
+            combinando
+            segurança, rapidez e facilidade de uso. Nossa missão é tornar a compra de Bitcoin acessível e
+            conveniente
             para todos, além de facilitar a auto-custódia dos fundos.</p>
         </p>
     </main>
@@ -239,30 +311,40 @@
 
         <h2>O que é Bitcoin?</h2>
         <p>Bitcoin é uma criptomoeda descentralizada que foi criada em 2009 por uma pessoa ou grupo de pessoas sob o
-            pseudônimo de Satoshi Nakamoto. Diferente das moedas fiduciárias, como o dólar ou o euro, o Bitcoin não é
+            pseudônimo de Satoshi Nakamoto. Diferente das moedas fiduciárias, como o dólar ou o euro, o Bitcoin não
+            é
             controlado por nenhuma entidade central ou governo. Ele permite transações diretas entre usuários na
             internet sem a necessidade de intermediários, como bancos ou governos. As transações com Bitcoin são
             registradas em um livro público e imutável conhecido como blockchain.</p>
 
         <h2>Rede On-Chain</h2>
-        <p>A rede on-chain do Bitcoin refere-se às transações que são validadas e registradas na blockchain principal.
+        <p>A rede on-chain do Bitcoin refere-se às transações que são validadas e registradas na blockchain
+            principal.
             Essas transações são públicas, permanentes e seguras, mas podem ser limitadas em termos de velocidade e
-            custo. Devido ao mecanismo de consenso por prova de trabalho (PoW), as transações requerem confirmação dos
-            mineradores, o que pode levar tempo e incorrer em taxas mais altas durante períodos de congestionamento da
+            custo. Devido ao mecanismo de consenso por prova de trabalho (PoW), as transações requerem confirmação
+            dos
+            mineradores, o que pode levar tempo e incorrer em taxas mais altas durante períodos de congestionamento
+            da
             rede.</p>
 
         <h2>Rede Lightning</h2>
         <p>A Rede Lightning é uma solução de segunda camada construída sobre a blockchain do Bitcoin para permitir
-            transações instantâneas e de baixo custo. Ela funciona abrindo canais de pagamento entre usuários, que podem
-            então realizar transações quase instantaneamente e com taxas muito baixas. As transações na Rede Lightning
-            são privadas e só são registradas na blockchain principal do Bitcoin quando um canal é aberto ou fechado,
+            transações instantâneas e de baixo custo. Ela funciona abrindo canais de pagamento entre usuários, que
+            podem
+            então realizar transações quase instantaneamente e com taxas muito baixas. As transações na Rede
+            Lightning
+            são privadas e só são registradas na blockchain principal do Bitcoin quando um canal é aberto ou
+            fechado,
             aumentando a escalabilidade e a privacidade.</p>
 
         <h2>Importância da Autocustódia</h2>
         <p>Autocustódia refere-se à prática de um indivíduo manter o controle sobre suas chaves privadas e,
-            consequentemente, sobre seus ativos em criptomoedas, sem depender de terceiros, como exchanges ou carteiras
-            custodiais. A autocustódia é vital para a segurança dos ativos digitais, pois confere ao usuário controle
-            total sobre seus fundos e os protege contra roubos, fraudes e falências de terceiros. Além disso, reforça o
+            consequentemente, sobre seus ativos em criptomoedas, sem depender de terceiros, como exchanges ou
+            carteiras
+            custodiais. A autocustódia é vital para a segurança dos ativos digitais, pois confere ao usuário
+            controle
+            total sobre seus fundos e os protege contra roubos, fraudes e falências de terceiros. Além disso,
+            reforça o
             princípio fundamental do Bitcoin de ser uma forma de dinheiro descentralizado e sem permissão.</p>
 
         <h2>Vantagens do Bitcoin em relação ao sistema financeiro tradicional</h2>
@@ -275,10 +357,13 @@
                 ilimitadamente pelos governos, levando à inflação e a perca do seu poder de compra.</li>
             <li><strong>Segurança:</strong> As transações com Bitcoin são seguras e irreversíveis, protegidas por
                 criptografia robusta, o que reduz significativamente a possibilidade de fraude e chargebacks.</li>
-            <li><strong>Inclusão Financeira:</strong> O Bitcoin oferece acesso a serviços financeiros para pessoas não
-                atendidas pelos sistemas bancários tradicionais, especialmente em países com infraestrutura financeira
+            <li><strong>Inclusão Financeira:</strong> O Bitcoin oferece acesso a serviços financeiros para pessoas
+                não
+                atendidas pelos sistemas bancários tradicionais, especialmente em países com infraestrutura
+                financeira
                 limitada.</li>
-            <li><strong>Transparência e Privacidade:</strong> Embora todas as transações sejam públicas e verificáveis
+            <li><strong>Transparência e Privacidade:</strong> Embora todas as transações sejam públicas e
+                verificáveis
                 na blockchain, as identidades dos usuários são protegidas e anônimas, oferecendo um equilíbrio entre
                 transparência e privacidade.</li>
         </ul>
