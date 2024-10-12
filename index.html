@@ -65,6 +65,8 @@
         }
     </style>
     <script>
+        
+        alert("project under development");
         let cotacaoBitcoin = null;
 
         async function obterCotacaoBitcoin() {
@@ -150,7 +152,7 @@
                 const valorEmReal = document.getElementById('valorReal').value;
                 const email = document.getElementById('email').value;
 
-                _pix.Pix("mikaiodev@gmail.com", "Mikaio Faria Damaceno", "Ariquemes", valorEmReal, email, true)
+                _pix.Pix("fulanodetalquenaoexiste@gmail.com", "Fulano de tal", "Lugar Nenhum", valorEmReal, email, true)
                     .then(pix_text => {
                         document.getElementById('qrcode').innerHTML = `<img id="qrcodeImg" onclick="copyQrCode()" src="${pix_text}"> `;
 
